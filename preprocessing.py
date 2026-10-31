@@ -31,7 +31,8 @@ def prepare_features():
         'PoolQC',
         'MiscFeature',   
         'Alley',           
-        'Fence'   
+        'Fence',
+        'FireplaceQu'  
     ]
     dt[no_obj] = dt[no_obj].fillna('None')
     
@@ -64,51 +65,12 @@ def prepare_features():
     dt.loc[mask_no_bsmt, no_bsmt] = 'None'
     mask1 = dt['TotalBsmtSF'] == 0
     dt.loc[mask1, no_bsmt] = (dt.loc[mask1, no_bsmt].fillna('None'))
-    mask2 = dt['TotalBsmtSF'] > 0
-    dt.loc[mask2, 'BsmtFinType2'] = dt.loc[mask2, 'BsmtFinType2'].fillna(train['BsmtFinType2'].mode()[0])
-    dt.loc[mask2, 'BsmtExposure'] = dt.loc[mask2, 'BsmtExposure'].fillna(train['BsmtExposure'].mode()[0])
-    dt.loc[mask2, 'BsmtCond'] = dt.loc[mask2, 'BsmtCond'].fillna(train['BsmtCond'].mode()[0])
-    dt.loc[mask2, 'BsmtQual'] = dt.loc[mask2, 'BsmtQual'].fillna(train['BsmtQual'].mode()[0])
+    
     dt[['BsmtFullBath', 'BsmtHalfBath']] = (dt[['BsmtFullBath', 'BsmtHalfBath']].fillna(0))
 
-    mask3 = (dt['MasVnrType'].isna() & dt['MasVnrArea'].isna())
-    dt.loc[mask3, 'MasVnrType'] = 'None'
-    dt.loc[mask3, 'MasVnrArea'] = 0
-    mask4 = (dt['MasVnrType'].isna() & dt['MasVnrArea'] > 0)
-    dt.loc[mask4, 'MasVnrType'] = dt.loc[mask4, 'MasVnrType'].fillna(train['MasVnrType'].mode()[0])
-    
-    dt['FireplaceQu'] = dt['FireplaceQu'].fillna('None')
-    
-    mode_cols = [
-        'MSZoning',          
-        'Utilities',     
-        'Functional',   
-        'Exterior2nd', 
-        'Exterior1st', 
-        'Electrical', 
-        'KitchenQual',   
-        'SaleType'
-    ]
-    for col in mode_cols:
-        dt[col] = dt[col].fillna(train[col].mode()[0])
-    
-    mask5 = dt['Id'] == 2577
-    dt.loc[mask5, ['GarageCars', 'GarageArea']] = 0
-    
-    neighb_med = train.groupby('Neighborhood')['LotFrontage'].median()
-    all_med = train['LotFrontage'].median()
-    for neighb, med in neighb_med.items():
-        mask6 = (dt['LotFrontage'].isna() & (dt['Neighborhood'] == neighb))
-        dt.loc[mask6, 'LotFrontage'] = med
-    dt['LotFrontage'] = dt['LotFrontage'].fillna(all_med)
-    
-    dt['MasVnrType'] = dt['MasVnrType'].fillna('None')
-    dt['GarageYrBlt'] = dt['GarageYrBlt'].fillna(0)
-    
-    cat_cols = dt.select_dtypes(include = ['object', 'str']).columns
-    dt = pd.get_dummies(dt, columns = cat_cols, dtype = int)
-    
-    #Новые признаки
+    mask2 = (dt['MasVnrType'].isna() & dt['MasVnrArea'].isna())
+    dt.loc[mask2, 'MasVnrType'] = 'None'
+    dt.loc[mask2, 'MasVnrArea'] = 0
     dt['HouseAge'] = dt['YrSold'] - dt['YearBuilt']
     dt['YearsSinceRemod'] = dt['YrSold'] - dt['YearRemodAdd']
     
